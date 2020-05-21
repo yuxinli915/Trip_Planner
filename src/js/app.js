@@ -39,3 +39,12 @@ function updateOriginResults(locationsList) {
 
   originResultsList.innerHTML = html;
 }
+
+originResultsList.addEventListener(`click`, event => {
+  if (event.target.closest(`li`) !== null) {
+    const originResults = document.querySelectorAll(`.origins > li`);
+
+    originResults.forEach(result => result.classList.remove(`selected`));
+    event.target.closest(`li`).classList.add(`selected`);
+  }
+})
