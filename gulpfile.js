@@ -35,7 +35,7 @@ function watching() {
 
 function server(done) {
   browserSync.init({
-    files: [`dist/css/style.css`, `dist/js/*.js`, `dist/index.html`],
+    files: [`dist/css/style.css`, `dist/js/app.js`, `dist/index.html`],
     server: { baseDir: `./dist` }
   });
   done();
