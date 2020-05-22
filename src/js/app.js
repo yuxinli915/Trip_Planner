@@ -37,16 +37,22 @@ btn.addEventListener(`click`, () => {
   if (selectedResults.length === 2) {
     const originCoords = [selectedResults[0].dataset.lat, selectedResults[0].dataset.long];
     const destinationCoords = [selectedResults[1].dataset.lat, selectedResults[1].dataset.long];
+    if (originCoords[0] === destinationCoords[0] && originCoords[1] === destinationCoords[1]) {
+      alert(`Dude, where do you want to go?`)
+    } else {
+      fetch(`https://api.winnipegtransit.com/v3/trip-planner.json?origin=geo/${originCoords[0]},${originCoords[1]}&destination=geo/${destinationCoords[0]},${destinationCoords[1]}&api-key=${wpgTransitApiKey}`)
+        .then(response => {
+          if (response.ok) {
+            return response.json();
+          } else {
+            throw new Error(`Fail to get data from API.`);
+          }
+        })
+        .then(data => {
+          updateTripPlan(data.plans[0].segments)
+        });
+    }
 
-    fetch(`https://api.winnipegtransit.com/v3/trip-planner.json?origin=geo/${originCoords[0]},${originCoords[1]}&destination=geo/${destinationCoords[0]},${destinationCoords[1]}&api-key=${wpgTransitApiKey}`)
-      .then(response => {
-        if (response.ok) {
-          return response.json();
-        } else {
-          throw new Error(`Fail to get data from API.`);
-        }
-      })
-      .then(data => updateTripPlan(data.plans[0].segments));
   }
 })
 
