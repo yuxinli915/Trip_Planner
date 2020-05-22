@@ -46,8 +46,7 @@ btn.addEventListener(`click`, () => {
           throw new Error(`Fail to get data from API.`);
         }
       })
-      .then(data => console.log(data));
-
+      .then(data => updateTripPlan(data.plans[0].segments));
   }
 })
 
@@ -67,8 +66,8 @@ function updateResults(locationsList, listEle) {
   let html = ``;
 
   locationsList.forEach(location => {
-    if (location.properties.address === undefined) {
-      location.properties.address = ``;
+    if (location.properties.address === undefined || location.properties.address === ``) {
+      location.properties.address = `Winnipeg`;
     }
 
     html += `   
@@ -89,4 +88,59 @@ function clickResult(event) {
     results.forEach(result => result.classList.remove(`selected`));
     event.target.closest(`li`).classList.add(`selected`);
   }
+}
+
+function updateTripPlan(tripPlan) {
+  const tripPlanEle = document.querySelector(`.my-trip`);
+  let html = ``;
+
+  tripPlan.forEach((segment, index) => {
+    switch (segment.type) {
+      case `walk`:
+      html += `
+        <li>
+          <i class="fas fa-walking" aria-hidden="true"></i>Walk for ${segment.times.durations.total} minutes to
+      `;
+        switch (index) {
+          case 0:
+            html += `
+               stop #${segment.to.stop.key} - ${segment.to.stop.name}
+              </li>
+            `;
+            break;
+
+          case tripPlan.length - 1:
+            html += `
+              your destination.
+              </li>
+            `;
+            break;
+
+          default:
+            break;
+        }
+        break;
+
+      case `ride`:
+        html += `
+          <li>
+            <i class="fas fa-bus" aria-hidden="true"></i>Ride the ${segment.route.name === undefined ? segment.route.key : segment.route.name} for ${segment.times.durations.total} minutes.
+          </li>
+        `;
+        break;
+
+      case `transfer`:
+        html += `
+          <li>
+            <i class="fas fa-ticket-alt" aria-hidden="true"></i>Transfer from stop #${segment.from.stop.key} - ${segment.from.stop.name} to stop #${segment.to.stop.key} - ${segment.to.stop.name}
+          </li>
+        `;
+        break;
+
+      default:
+        break;
+    }
+  })
+
+  tripPlanEle.innerHTML = html;
 }
