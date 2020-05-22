@@ -1,4 +1,5 @@
-const apiKey = `pk.eyJ1Ijoic3VwZXJ4aW4iLCJhIjoiY2thNWlqZHd4MDBpODNnb3owMDA2Y3dnYiJ9.-zciQf0emsOdjhIjB2uoNA`;
+const mapBoxApiKey = `pk.eyJ1Ijoic3VwZXJ4aW4iLCJhIjoiY2thNWlqZHd4MDBpODNnb3owMDA2Y3dnYiJ9.-zciQf0emsOdjhIjB2uoNA`;
+const wpgTransitApiKey = `G0ZNynR9C1I5fFkrMET`;
 const originForm = document.querySelector(`.origin-form`);
 const destinationForm = document.querySelector(`.destination-form`);
 const originResultsList = document.querySelector(`.origins`);
@@ -27,20 +28,30 @@ destinationForm.addEventListener(`submit`, event => {
   event.preventDefault();
 })
 
-originResultsList.addEventListener(`click`, event => {
-  clickResult(event);
-})
+originResultsList.addEventListener(`click`, event => clickResult(event));
 
-destinationResultsList.addEventListener(`click`, event => {
-  clickResult(event);
-})
+destinationResultsList.addEventListener(`click`, event => clickResult(event));
 
 btn.addEventListener(`click`, () => {
+  const selectedResults = document.getElementsByClassName(`selected`);
+  if (selectedResults.length === 2) {
+    const originCoords = [selectedResults[0].dataset.lat, selectedResults[0].dataset.long];
+    const destinationCoords = [selectedResults[1].dataset.lat, selectedResults[1].dataset.long];
 
+    fetch(`https://api.winnipegtransit.com/v3/trip-planner.json?origin=geo/${originCoords[0]},${originCoords[1]}&destination=geo/${destinationCoords[0]},${destinationCoords[1]}&api-key=${wpgTransitApiKey}`)
+      .then(response => {
+        if (response.ok) {
+          return response.json();
+        } else {
+          throw new Error(`Fail to get data from API.`);
+        }
+      })
+      .then(data => updateTripPlan(data.plans[0].segments));
+  }
 })
 
 function searchLocations(keyword, listEle) {
-  fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${keyword}.json?access_token=${apiKey}&limit=10&bbox=-97.325875,49.766204,-96.953987,49.99275`)
+  fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${keyword}.json?access_token=${mapBoxApiKey}&limit=10&bbox=-97.325875,49.766204,-96.953987,49.99275`)
     .then(response => {
       if (response.ok) {
         return response.json();
@@ -55,8 +66,8 @@ function updateResults(locationsList, listEle) {
   let html = ``;
 
   locationsList.forEach(location => {
-    if (location.properties.address === undefined) {
-      location.properties.address = ``;
+    if (location.properties.address === undefined || location.properties.address === ``) {
+      location.properties.address = `Winnipeg`;
     }
 
     html += `   
@@ -72,9 +83,64 @@ function updateResults(locationsList, listEle) {
 
 function clickResult(event) {
   if (event.target.closest(`li`) !== null) {
-    const results = document.querySelectorAll(`${event.target.closest(`ul`)} > li`);
+    const results = document.querySelectorAll(`.${event.target.closest(`ul`).className} > li`);
 
     results.forEach(result => result.classList.remove(`selected`));
     event.target.closest(`li`).classList.add(`selected`);
   }
+}
+
+function updateTripPlan(tripPlan) {
+  const tripPlanEle = document.querySelector(`.my-trip`);
+  let html = ``;
+
+  tripPlan.forEach((segment, index) => {
+    switch (segment.type) {
+      case `walk`:
+      html += `
+        <li>
+          <i class="fas fa-walking" aria-hidden="true"></i>Walk for ${segment.times.durations.total} minutes to
+      `;
+        switch (index) {
+          case 0:
+            html += `
+               stop #${segment.to.stop.key} - ${segment.to.stop.name}
+              </li>
+            `;
+            break;
+
+          case tripPlan.length - 1:
+            html += `
+              your destination.
+              </li>
+            `;
+            break;
+
+          default:
+            break;
+        }
+        break;
+
+      case `ride`:
+        html += `
+          <li>
+            <i class="fas fa-bus" aria-hidden="true"></i>Ride the ${segment.route.name === undefined ? segment.route.key : segment.route.name} for ${segment.times.durations.total} minutes.
+          </li>
+        `;
+        break;
+
+      case `transfer`:
+        html += `
+          <li>
+            <i class="fas fa-ticket-alt" aria-hidden="true"></i>Transfer from stop #${segment.from.stop.key} - ${segment.from.stop.name} to stop #${segment.to.stop.key} - ${segment.to.stop.name}
+          </li>
+        `;
+        break;
+
+      default:
+        break;
+    }
+  })
+
+  tripPlanEle.innerHTML = html;
 }
