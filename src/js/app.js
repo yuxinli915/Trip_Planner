@@ -103,21 +103,25 @@ function updateTripPlan(tripPlan) {
           <li>
             <i class="fas fa-walking" aria-hidden="true"></i>Walk for ${segment.times.durations.total} minutes to
           `;
-        if (index === 0) {
+        if (index === 0 && tripPlan.length !== 1) {
           html += `
             stop #${segment.to.stop.key} - ${segment.to.stop.name}
-              </li>
+            </li>
           `;
-        } else if (index === tripPlan.length - 1){
+        } else if (index === tripPlan.length - 1 || tripPlan.length === 1){
           html += `
-            your destination.
+            your destination
             </li>
           `;
         }
       } else if (segment.type === `ride`) {
+        if (segment.route.name === undefined) {
+          segment.route.name = segment.route.key;
+        } 
+
         html += `
           <li>
-            <i class="fas fa-bus" aria-hidden="true"></i>Ride the ${segment.route.name === undefined ? segment.route.key : segment.route.name} for ${segment.times.durations.total} minutes.
+            <i class="fas fa-bus" aria-hidden="true"></i>Ride the ${segment.route.name} for ${segment.times.durations.total} minutes
           </li>
         `;
       } else if (segment.type === `transfer`) {
