@@ -4,6 +4,7 @@ const originForm = document.querySelector(`.origin-form`);
 const destinationForm = document.querySelector(`.destination-form`);
 const originResultsList = document.querySelector(`.origins`);
 const destinationResultsList = document.querySelector(`.destinations`);
+const tripPlanEle = document.querySelector(`.my-trip`);
 const btn = document.querySelector(`.plan-trip`);
 
 originForm.addEventListener(`submit`, event => {
@@ -49,7 +50,11 @@ btn.addEventListener(`click`, () => {
           }
         })
         .then(data => {
-          updateTripPlan(data.plans[0].segments)
+          if (data.plans[0] === undefined) {
+            tripPlanEle.innerHTML = `<li>No plans were found.</li>`;
+          } else {
+            updateTripPlan(data.plans[0].segments);
+          }
         });
     }
 
@@ -97,48 +102,42 @@ function clickResult(event) {
 }
 
 function updateTripPlan(tripPlan) {
-  const tripPlanEle = document.querySelector(`.my-trip`);
   let html = ``;
 
-  if (tripPlan === undefined) {
-    tripPlan.innerHTML = `<div>No plan found.</div>`
-  } else {
-    tripPlan.forEach((segment, index) => {
-      if (segment.type === `walk`) {
-        html += `
-          <li>
-            <i class="fas fa-walking" aria-hidden="true"></i>Walk for ${segment.times.durations.total} minutes to
-          `;
-        if (index === 0 && tripPlan.length !== 1) {
-          html += `
-            stop #${segment.to.stop.key} - ${segment.to.stop.name}
-            </li>
-          `;
-        } else if (index === tripPlan.length - 1 || tripPlan.length === 1){
-          html += `
-            your destination
-            </li>
-          `;
-        }
-      } else if (segment.type === `ride`) {
-        if (segment.route.name === undefined) {
-          segment.route.name = segment.route.key;
-        } 
-
-        html += `
-          <li>
-            <i class="fas fa-bus" aria-hidden="true"></i>Ride the ${segment.route.name} for ${segment.times.durations.total} minutes
-          </li>
+  tripPlan.forEach((segment, index) => {
+    if (segment.type === `walk`) {
+      html += `
+        <li>
+          <i class="fas fa-walking" aria-hidden="true"></i>Walk for ${segment.times.durations.total} minutes to
         `;
-      } else if (segment.type === `transfer`) {
+      if (index === 0 && tripPlan.length !== 1) {
         html += `
-          <li>
-            <i class="fas fa-ticket-alt" aria-hidden="true"></i>Transfer from stop #${segment.from.stop.key} - ${segment.from.stop.name} to stop #${segment.to.stop.key} - ${segment.to.stop.name}
+          stop #${segment.to.stop.key} - ${segment.to.stop.name}            </li>
+        `;
+      } else if (index === tripPlan.length - 1 || tripPlan.length === 1){
+        html += `
+          your destination
           </li>
         `;
       }
-    })
+    } else if (segment.type === `ride`) {
+      if (segment.route.name === undefined) {
+        segment.route.name = segment.route.key;
+      } 
 
-    tripPlanEle.innerHTML = html;
-  }
+      html += `
+        <li>
+          <i class="fas fa-bus" aria-hidden="true"></i>Ride the ${segment.route.name} for ${segment.times.durations.total} minutes
+        </li>
+      `;
+    } else if (segment.type === `transfer`) {
+      html += `
+        <li>
+          <i class="fas fa-ticket-alt" aria-hidden="true"></i>Transfer from stop #${segment.from.stop.key} - ${segment.from.stop.name} to stop #${segment.to.stop.key} - ${segment.to.stop.name}
+        </li>
+      `;
+    }
+  })
+
+  tripPlanEle.innerHTML = html;
 }
