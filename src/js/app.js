@@ -94,53 +94,41 @@ function updateTripPlan(tripPlan) {
   const tripPlanEle = document.querySelector(`.my-trip`);
   let html = ``;
 
-  tripPlan.forEach((segment, index) => {
-    switch (segment.type) {
-      case `walk`:
-      html += `
-        <li>
-          <i class="fas fa-walking" aria-hidden="true"></i>Walk for ${segment.times.durations.total} minutes to
-      `;
-        switch (index) {
-          case 0:
-            html += `
-               stop #${segment.to.stop.key} - ${segment.to.stop.name}
+  if (tripPlan === undefined) {
+    tripPlan.innerHTML = `<div>No plan found.</div>`
+  } else {
+    tripPlan.forEach((segment, index) => {
+      if (segment.type === `walk`) {
+        html += `
+          <li>
+            <i class="fas fa-walking" aria-hidden="true"></i>Walk for ${segment.times.durations.total} minutes to
+          `;
+        if (index === 0) {
+          html += `
+            stop #${segment.to.stop.key} - ${segment.to.stop.name}
               </li>
-            `;
-            break;
-
-          case tripPlan.length - 1:
-            html += `
-              your destination.
-              </li>
-            `;
-            break;
-
-          default:
-            break;
+          `;
+        } else if (index === tripPlan.length - 1){
+          html += `
+            your destination.
+            </li>
+          `;
         }
-        break;
-
-      case `ride`:
+      } else if (segment.type === `ride`) {
         html += `
           <li>
             <i class="fas fa-bus" aria-hidden="true"></i>Ride the ${segment.route.name === undefined ? segment.route.key : segment.route.name} for ${segment.times.durations.total} minutes.
           </li>
         `;
-        break;
-
-      case `transfer`:
+      } else if (segment.type === `transfer`) {
         html += `
           <li>
             <i class="fas fa-ticket-alt" aria-hidden="true"></i>Transfer from stop #${segment.from.stop.key} - ${segment.from.stop.name} to stop #${segment.to.stop.key} - ${segment.to.stop.name}
           </li>
         `;
-        break;
+      }
+    })
 
-      default:
-        break;
-    }
-  })
-
-  tripPlanEle.innerHTML = html;
+    tripPlanEle.innerHTML = html;
+  }
 }
