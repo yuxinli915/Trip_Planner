@@ -81,7 +81,8 @@ input:focus {
   align-self: center;
 }
 
-.select-alert {
+.select-alert,
+.no-result {
   margin: 10px;
   color: red;
 }

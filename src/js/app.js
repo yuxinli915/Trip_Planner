@@ -87,22 +87,28 @@ function searchLocations(keyword, listEle) {
 }
 
 function updateResults(locationsList, listEle) {
-  let html = ``;
+  if (locationsList.length === 0) {
+    listEle.innerHTML = `<div class="no-result">No results were found.</div>`;
+  } else {
+    let html = ``;
 
-  locationsList.forEach(location => {
-    if (location.properties.address === undefined || location.properties.address === ``) {
-      location.properties.address = `Winnipeg`;
-    }
+    locationsList.forEach(location => {
+      if (location.properties.address === undefined || location.properties.address === ``) {
+        location.properties.address = `Winnipeg`;
+      }
 
-    html += `   
+      html += `   
       <li data-long="${location.center[0]}" data-lat="${location.center[1]}" class="">
         <div class="name">${location.text}</div>
         <div>${location.properties.address}</div>
       </li> 
     `;
-  })
+    })
 
-  listEle.innerHTML = html;
+    listEle.innerHTML = html;
+  }
+
+
 }
 
 function clickResult(event) {
