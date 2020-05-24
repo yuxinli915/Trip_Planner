@@ -80,3 +80,8 @@ input:focus {
   font-size: 25px;
   align-self: center;
 }
+
+.select-alert {
+  margin: 10px;
+  color: red;
+}

@@ -5,6 +5,7 @@ const destinationForm = document.querySelector(`.destination-form`);
 const originResultsList = document.querySelector(`.origins`);
 const destinationResultsList = document.querySelector(`.destinations`);
 const tripPlanEle = document.querySelector(`.my-trip`);
+const resultsList = document.querySelectorAll(`ul:not(.my-trip)`);
 const btn = document.querySelector(`.plan-trip`);
 
 originForm.addEventListener(`submit`, event => {
@@ -38,6 +39,9 @@ btn.addEventListener(`click`, () => {
   if (selectedResults.length === 2) {
     const originCoords = [selectedResults[0].dataset.lat, selectedResults[0].dataset.long];
     const destinationCoords = [selectedResults[1].dataset.lat, selectedResults[1].dataset.long];
+
+    document.querySelectorAll(`.select-alert`).forEach(alert => alert.remove());
+
     if (originCoords[0] === destinationCoords[0] && originCoords[1] === destinationCoords[1]) {
       alert(`Dude, where do you want to go?`)
     } else {
@@ -58,6 +62,15 @@ btn.addEventListener(`click`, () => {
         });
     }
 
+  } else if (selectedResults.length === 0) {
+    resultsList.forEach(list => list.insertAdjacentHTML(`beforebegin`, `<div class="select-alert">Please select one result.</div>`));
+
+  } else {
+    resultsList.forEach(list => {
+      if (list.querySelector(`.selected`) === null) {
+        list.insertAdjacentHTML(`beforebegin`, `<div class="select-alert">Please select one result.</div>`);
+      }
+    })
   }
 })
 
@@ -121,6 +134,7 @@ function updateTripPlan(tripPlan) {
         `;
       }
     } else if (segment.type === `ride`) {
+
       if (segment.route.name === undefined) {
         segment.route.name = segment.route.key;
       } 
