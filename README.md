@@ -6,6 +6,6 @@ This project is a trip planner based on MapBox and Winnipeg Transit API.
 
 You can search locations for starting and destination. 
 
-There will be two lists and you can choose one for each.
+There will be two lists and you can choose one from each.
 
 Then the app will display the best trip route.
